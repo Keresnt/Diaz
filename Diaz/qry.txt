@@ -1,0 +1,110 @@
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    user_type ENUM('customer', 'admin') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Users (name, email, password, user_type, created_at)
+VALUES
+    ('Admin 1', 'admin1@ecommerce.ph', 'hashed_password1', 'admin', NOW()),
+    ('Admin 2', 'admin2@ecommerce.ph', 'hashed_password2', 'admin', NOW()),
+    ('Admin 3', 'admin3@ecommerce.ph', 'hashed_password3', 'admin', NOW()),
+    ('Admin 4', 'admin4@ecommerce.ph', 'hashed_password4', 'admin', NOW());
+
+-- Insert sample users into Users table
+INSERT INTO Users (name, email, password, user_type, created_at)
+VALUES
+    ('Juan Dela Cruz', 'juan@ecommerce.ph', 'hashed_password1', 'customer', NOW()),
+    ('Maria Santos', 'maria@ecommerce.ph', 'hashed_password2', 'customer', NOW()),
+    ('Pedro Reyes', 'pedro@ecommerce.ph', 'hashed_password3', 'customer', NOW()),
+    ('Anna Lopez', 'anna@ecommerce.ph', 'hashed_password4', 'customer', NOW());
+
+
+CREATE TABLE Products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Products (name, description, price, stock_quantity, created_at)
+VALUES
+    ('Samsung Galaxy A54', 'Affordable smartphone with 5G capability, 128GB storage, and a 50MP camera.', 20000.00, 50, NOW()),
+    ('Nike Air Max 270', 'Stylish and comfortable running shoes available in various sizes.', 7500.00, 100, NOW()),
+    ('Xiaomi Smart Vacuum Cleaner', 'Automatic smart vacuum cleaner with Wi-Fi and mobile app control.', 12000.00, 30, NOW()),
+    ('Casio G-Shock Watch', 'Durable and water-resistant wristwatch with stopwatch functionality.', 4500.00, 75, NOW()),
+    ('Unilever Dishwashing Liquid (1L)', 'Effective grease-cutting formula for sparkling clean dishes.', 150.00, 200, NOW()),
+    ('SM Home Bedsheet Set', 'Soft and comfortable queen-size bedsheet set with pillowcases.', 1000.00, 80, NOW()),
+    ('Asus ROG Gaming Laptop', 'High-performance gaming laptop with NVIDIA RTX 3070 and 16GB RAM.', 95000.00, 10, NOW()),
+    ('Lazada E-Gift Card', 'E-Gift card for online shopping on Lazada.', 500.00, 500, NOW());
+
+
+
+CREATE TABLE Orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('pending', 'shipped', 'delivered', 'canceled') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+        );
+
+-- Insert sample data into Orders table
+INSERT INTO Orders (user_id, order_date, total_amount, status, created_at)
+VALUES
+    (1, '2024-12-01 10:30:00', 2500.00, 'delivered', '2024-12-01 10:30:00'), -- Order from User 1
+    (2, '2024-12-02 14:15:00', 1500.00, 'shipped', '2024-12-02 14:15:00'), -- Order from User 2
+    (3, '2024-12-03 08:45:00', 800.00, 'pending', '2024-12-03 08:45:00'), -- Order from User 3
+    (4, '2024-12-04 16:20:00', 5000.00, 'canceled', '2024-12-04 16:20:00'); -- Order from User 4
+
+
+
+CREATE TABLE Management (
+    management_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_user_id INT NOT NULL,
+    setting_name VARCHAR(255) DEFAULT NULL,
+    setting_value TEXT DEFAULT NULL,
+    action_performed VARCHAR(255) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_user_id) REFERENCES Users(user_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+INSERT INTO Management (admin_user_id, setting_name, setting_value, action_performed, timestamp)
+VALUES
+    (1, 'VAT Rate', '12%', 'Updated VAT rate for Philippines', NOW()), -- Philippines' standard VAT rate
+    (2, 'Shipping Policy', 'Free shipping for orders over ₱1,500', 'Updated shipping policy', NOW()), -- Free shipping threshold
+    (3, 'Currency', 'PHP', 'Set default currency to PHP', NOW()), -- Set currency to Philippine Peso
+    (4, 'Region Restrictions', 'Deliver only within Luzon, Visayas, Mindanao', 'Updated regional delivery coverage', NOW());
+
+CREATE TABLE Order_Details (
+    order_detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+INSERT INTO Order_Details (order_id, product_id, quantity)
+VALUES
+    (1, 1, 2), -- Order 1 contains 2 units of Product 1
+    (1, 2, 1), -- Order 1 contains 1 unit of Product 2
+    (2, 3, 3), -- Order 2 contains 3 units of Product 3
+    (3, 1, 1), -- Order 3 contains 1 unit of Product 1
+    (4, 4, 5); -- Order 4 contains 5 units of Product 4
